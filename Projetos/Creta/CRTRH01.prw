@@ -12,13 +12,8 @@ Relatorio de status dos colaboradores
 
 User Function CRTRH01
     Local oReport
+    Private lAuto := .F. 
 
-    PRIVATE lAuto := .F. 
-
-    If Empty(FunName())
-        RpcSetType(3)
-        RPCSetEnv("01","11")
-    EndIf	
     oReport:= ReportDef()
     oReport:PrintDialog()                                               
 Return
@@ -33,13 +28,12 @@ Static Function ReportDef()
 
     Local oReport 
     Local oSection1 
-    Local cTitle := "Relat rio de Analise de funcionáros"
+    Local cTitle := "Relatorio de Analise de funcionáros"
              
     /*Variaveis utilizadas para parametros                          
     mv_par01: Data De                                           
     mv_par02: Data Ate                                          
     */                                                                
-
     Pergunte("GPER090",.F.)
 
     oReport := TReport():New("GPER090",cTitle,If(lAuto,Nil,"GPER090"), {|oReport| ReportPrint(oReport)},"") 
@@ -112,18 +106,8 @@ Static Function ReportPrint(oReport)
     Local cQuery 	:= ""
     Local aAux      :=  {}
     Local nCont
-    Local aTotReg   :=  {}
 
-    cQuery := " SELECT GW1_DTEMIS,GW1_REGCOM,SUM(GW8_VALOR) AS TOTAL  " 
-    cQuery += " FROM " + RetSQLName("GW1") + " GW1  " 
-    cQuery += " INNER JOIN " + RetSQLName("GW8") + " GW8 ON GW8_FILIAL = GW1_FILIAL AND GW1_CDTPDC=GW8_CDTPDC AND GW1_EMISDC=GW8_EMISDC AND GW1_SERDC=GW8_SERDC AND GW1_NRDC=GW8_NRDC AND GW8.D_E_L_E_T_=' '  " 
-    cQuery += " WHERE GW1_FILIAL+GW1_NRDC+GW1_CDTPDC+GW1_SERDC+GW1_EMISDC IN "
-    cQuery += "      (SELECT GW4_FILIAL+GW4_NRDC+GW4_TPDC+GW4_SERDC+GW4_EMISDC FROM " + RetSQLName("GW4") + " GW4  " 
-    cQuery += "         INNER JOIN " + RetSQLName("GW3") + " GW3 ON GW3_FILIAL = GW4_FILIAL AND GW3_CDESP = GW4_CDESP AND GW3_EMISDF = GW4_EMISDF AND GW3_SERDF = GW4_SERDF AND GW3_NRDF = GW4_NRDF AND GW3_DTEMIS = GW4_DTEMIS AND GW3.D_E_L_E_T_=' ' " 
-    cQuery += " WHERE GW4.D_E_L_E_T_=' ')  " 
-    cQuery += " AND GW1_DTEMIS BETWEEN '20250101' AND '20250131' AND GW1_REGCOM<>' '  " 
-    cQuery += " GROUP BY GW1_DTEMIS,GW1_REGCOM  " 
-    cQuery += " ORDER BY 1  " 
+    cQuery := "SELECT RA_MAT,RA_NOMECMP,RA_NASC,RA_LOGRDSC,RA_LOGRNUM,RA_BAIRRO,RA_CEP,RA_DDDCELU,RA_NUMCELU,RA_RG,RA_CIC,RA_PIS,RA_BCDEPSA,RA_CTDEPSA,RA_TPCTSAL,RA_ADMISSA FROM SRA010"
 
     If Select('TRB') > 0
         dbSelectArea('TRB')
@@ -137,84 +121,23 @@ Static Function ReportPrint(oReport)
 
     While !EOF()
         // SERIE,NOTA,EMISSAO,CFOP,CST,CNPJ,TIPOMOV,VALOR,ALIQUOTA,BASE,VALICM,CHAVE
-        nPos := Ascan(aTotReg,{|x| x[1] == TRB->GW1_REGCOM} ) 
+        //nPos := Ascan(aTotReg,{|x| x[1] == TRB->GW1_REGCOM} ) 
 
-        If nPos == 0
-            Aadd(aTotReg,{TRB->GW1_REGCOM,TRB->TOTAL,0})
-        Else 
-            aTotReg[nPos,02] += TRB->TOTAL
-        EndIf 
+        //If nPos == 0
+            //Aadd(aTotReg,{TRB->RA_MAT,0,0})
+        //Else 
+            //aTotReg[nPos,02] += TRB->TOTAL
+        //EndIf 
         
-        Aadd(aAux,{ TRB->GW1_DTEMIS,;
-                    TRB->GW1_REGCOM,;
-                    TRB->TOTAL,;
-                    0,;
-                    0})
-
+        Aadd(aAux,{ TRB->RA_MAT})
+        
         Dbskip()
     ENDDO
-
-    //GW3_BASIMP - GW3_VALIMP - GW3_VLCOF - GW3_VLPIS
-    cQuery := "SELECT GW1_DTEMIS, GW1_REGCOM, SUM(GW3_BASIMP - GW3_VLIMP - GW3_VLCOF - GW3_VLPIS) AS FRETE " 
-    cQuery += " FROM GW1010 GW1 " 
-    cQuery += " INNER JOIN GW4010 GW4 ON GW4_FILIAL = GW1_FILIAL AND GW1_NRDC = GW4_NRDC AND GW1_CDTPDC = GW4_TPDC AND GW1_SERDC = GW4_SERDC AND GW1_EMISDC = GW4_EMISDC AND GW4.D_E_L_E_T_ = ' ' " 
-    cQuery += " INNER JOIN GW3010 GW3 ON GW3_FILIAL = GW4_FILIAL AND GW3_CDESP = GW4_CDESP AND GW3_EMISDF = GW4_EMISDF AND GW3_SERDF = GW4_SERDF AND GW3_NRDF = GW4_NRDF AND GW3_DTEMIS = GW4_DTEMIS AND GW3.D_E_L_E_T_ = ' ' " 
-    cQuery += " WHERE GW1_DTEMIS BETWEEN '20250101' AND '20250131' AND GW1_REGCOM <> ' ' " 
-    cQuery += " GROUP BY GW1_DTEMIS, GW1_REGCOM " 
-    cQuery += " ORDER BY 1"
-
-    If Select('TRB') > 0
-	    dbSelectArea('TRB')
-	    dbCloseArea()
-    EndIf
-
-    cQuery := ChangeQuery(cQuery)
-
-    dbUseArea(.T.,"TOPCONN",TCGENQRY(,,cQuery),"TRB",.F.,.T.)
-    dbSelectArea("TRB")
-
-    While !EOF()
-        nPos := Ascan(aAux,{|x| x[1]+x[2] == TRB->GW1_DTEMIS+TRB->GW1_REGCOM})
-        
-        If nPos > 0
-            aAux[nPos,04] += TRB->FRETE 
-            aAux[nPos,05] := aAux[nPos,04] / aAux[nPos,03]
-        Else 
-            Aadd(aAux,{ TRB->GW1_DTEMIS,;
-                        TRB->GW1_REGCOM,;
-                        0,;
-                        TRB->FRETE ,;
-                        0})
-        EndIf 
-
-        nPos := Ascan(aTotReg,{|x| x[1] == TRB->GW1_REGCOM} ) 
-
-        If nPos == 0
-            Aadd(aTotReg,{TRB->GW1_REGCOM,0,TRB->FRETE})
-        Else 
-            aTotReg[nPos,03] += TRB->FRETE
-        EndIf
-
-        Dbskip()
-    ENDDO
-
-    oReport:onPageBreak( { ||  /*oReport:SkipLine(), oSection1:PrintLine(), oReport:SkipLine() */})
-    oReport:SetMeter(TRB->(LastRec()))
-
-    dbSelectArea("TRB")               
-    Dbgotop()
-
-    oSection1:Init()
 
     For nCont := 1 to len(aAux) 
 
-        oSection1:Cell('Data'):SetValue(STOD(aAux[nCont,01]))
-        oSection1:Cell('Regional'):SetValue(aAux[nCont,02])
-        oSection1:Cell('Valor Faturamento Bruto'):SetValue(aAux[nCont,03])
-        oSection1:Cell('Valor Frete s/ Imposto'):SetValue(aAux[nCont,04])
-        oSection1:Cell('% Frete s/ Imposto'):SetValue((aAux[nCont,05]*100))
+        oSection1:Cell('Matricula'):SetValue(aAux[nCont,01])
         
-
         oReport:IncMeter()
 
         If oReport:Cancel()
@@ -224,33 +147,6 @@ Static Function ReportPrint(oReport)
         oSection1:PrintLine()
         
     Next nCont
-
-    oSection1:Cell('Data'):SetValue('')
-    oSection1:Cell('Regional'):SetValue('')
-    oSection1:Cell('Valor Faturamento Bruto'):SetValue('')
-    oSection1:Cell('Valor Frete s/ Imposto'):SetValue('')
-    oSection1:Cell('% Frete s/ Imposto'):SetValue('')
-    oSection1:PrintLine()
-    oSection1:PrintLine()
-    oSection1:PrintLine()
-    oSection1:PrintLine()
-    oSection1:PrintLine()
-
-    oSection1:Cell('Data'):SetValue('')
-    oSection1:Cell('Regional'):SetValue('Totais por Regi o')
-    oSection1:Cell('Valor Faturamento Bruto'):SetValue('')
-    oSection1:Cell('Valor Frete s/ Imposto'):SetValue('')
-    oSection1:Cell('% Frete s/ Imposto'):SetValue('')
-    oSection1:PrintLine()
-
-    For nCont := 1 to len(aTotReg)
-        oSection1:Cell('Data'):SetValue('')
-        oSection1:Cell('Regional'):SetValue(aTotReg[nCont,01])
-        oSection1:Cell('Valor Faturamento Bruto'):SetValue(aTotReg[nCont,02])
-        oSection1:Cell('Valor Frete s/ Imposto'):SetValue(aTotReg[nCont,03])
-        oSection1:Cell('% Frete s/ Imposto'):SetValue((aTotReg[nCont,03] / aTotReg[nCont,02])*100)
-        oSection1:PrintLine()
-    Next nCont 
 
     oSection1:Finish()
     oReport:EndPage() 
