@@ -1,0 +1,257 @@
+#INCLUDE "PROTHEUS.CH"
+#INCLUDE "TBICONN.CH"
+#INCLUDE "TOPCONN.CH"
+
+/*/{Protheus.doc} CRTR001
+Relatorio de status dos colaboradores
+@type function
+@version 1.0.1 
+@author Marcos Antonio Sanches
+@since 4/29/2025
+/*/
+
+User Function CRTRH01
+    Local oReport
+
+    PRIVATE lAuto := .F. 
+
+    If Empty(FunName())
+        RpcSetType(3)
+        RPCSetEnv("01","11")
+    EndIf	
+    oReport:= ReportDef()
+    oReport:PrintDialog()                                               
+Return
+
+/*/
+   Programa: ReportDef | Autor: Everton Rosa | Data: 25/04/2023   
+   Descricao: Dados para exibicao
+   Parametros  nExp01: nReg 
+Retorno oExpO1: Objeto do relatorio
+/*/
+Static Function ReportDef()
+
+    Local oReport 
+    Local oSection1 
+    Local cTitle := "Relat rio de Analise de funcionáros"
+             
+    /*Variaveis utilizadas para parametros                          
+    mv_par01: Data De                                           
+    mv_par02: Data Ate                                          
+    */                                                                
+
+    Pergunte("GPER090",.F.)
+
+    oReport := TReport():New("GPER090",cTitle,If(lAuto,Nil,"GPER090"), {|oReport| ReportPrint(oReport)},"") 
+    oReport:SetLANDscape() 
+
+    /*                                                                        ?
+    Criacao da celulas da secao do relatorio                                 
+        TRCell():New                                                             
+        ExpO1 : Objeto TSection que a secao pertence                             
+        ExpC2 : Nome da celula do relat rio. O SX3 ser  consultado               
+        ExpC3 : Nome da tabela de referencia da celula                           
+        ExpC4 : Titulo da celula                                                 
+            Default : X3Titulo()                                             
+        ExpC5 : Picture                                                          
+            Default : X3_PICTURE                                             
+        ExpC6 : Tamanho                                                          
+            Default : X3_TAMANHO                                             
+            ExpL7 : Informe se o tamanho esta em pixel                               
+            Default : False                                                  
+        ExpB8 : Bloco de c digo para impressao.                                  
+            Default : ExpC2                                                  
+    */                                                                          
+    
+    oSection1:= TRSection():New(oReport,"NAZ",{"TRB"},/*aOrdem*/)
+    oSection1:SetHeaderPage()
+
+    TRCell():New(oSection1,"Matricula","TRB",/*Titulo*/,/*Picture*/,TamSX3("RA_MAT")[1],/*lPixel*/,/*{|| code-block de impressao }*/)
+    TRCell():New(oSection1,"Nome completo","TRB",/*Titulo*/,/*Picture*/,TamSX3("RA_NOMECMP")[1],/*lPixel*/)
+    TRCell():New(oSection1,"Data de nascimento","TRB",/*Titulo*/,/*Picture*/,TamSX3("RA_NASC")[1],/*lPixel*/,/*{|| code-block de impressao }*/)
+    TRCell():New(oSection1,"Endereço","TRB",/*Titulo*/,/*Picture*/,TamSX3("RA_LOGRDSC")[1],/*lPixel*/, /**/ )
+    TRCell():New(oSection1,"Número","TRB",/*Titulo*/,/*Picture*/,TamSX3("RA_LOGRNUM")[1],/*lPixel*/,/*{|| code-block de impressao }*/)
+    TRCell():New(oSection1,"Bairro","TRB",/*Titulo*/,/*Picture*/,TamSX3("RA_BAIRRO")[1],/*lPixel*/,/*{|| code-block de impressao }*/)
+    TRCell():New(oSection1,"Cidade","TRB",/*Titulo*/,/*Picture*/,TamSX3("RA_CODMUNE")[1],/*lPixel*/,/*{|| code-block de impressao }*/)
+    TRCell():New(oSection1,"CEP","TRB",/*Titulo*/,/*Picture*/,TamSX3("RA_CEP")[1],/*lPixel*/,/*{|| code-block de impressao }*/)
+    TRCell():New(oSection1,"DDD + Telefone","TRB",/*Titulo*/,/*Picture*/,TamSX3("RA_DDDCELU")[1]+TamSX3("RA_NUMCELU")[1],/*lPixel*/,/*{|| code-block de impressao }*/)
+    TRCell():New(oSection1,"RG","TRB",/*Titulo*/,/*Picture*/,TamSX3("RA_RG")[1],/*lPixel*/,/*{|| code-block de impressao }*/)
+    TRCell():New(oSection1,"CPF","TRB",/*Titulo*/,/*Picture*/,TamSX3("RA_CIC")[1],/*lPixel*/,/*{|| code-block de impressao }*/)
+    TRCell():New(oSection1,"PIS","TRB",/*Titulo*/,/*Picture*/,TamSX3("RA_PIS")[1],/*lPixel*/,/*{|| code-block de impressao }*/)
+    TRCell():New(oSection1,"Banco","TRB",/*Titulo*/,/*Picture*/,TamSX3("RA_BCDEPSA")[1],/*lPixel*/,/*{|| code-block de impressao }*/)
+    TRCell():New(oSection1,"Agencia","TRB",/*Titulo*/,/*Picture*/,TamSX3("RA_BCDEPSA")[1],/*lPixel*/,/*{|| code-block de impressao }*/)
+    TRCell():New(oSection1,"Conta","TRB",/*Titulo*/,/*Picture*/,TamSX3("RA_CTDEPSA")[1],/*lPixel*/,/*{|| code-block de impressao }*/)
+    TRCell():New(oSection1,"Tipo conta","TRB",/*Titulo*/,/*Picture*/,TamSX3("RA_TPCTSAL")[1],/*lPixel*/,/*{|| code-block de impressao }*/)
+    TRCell():New(oSection1,"Data de admissão","TRB",/*Titulo*/,/*Picture*/,TamSX3("RA_ADMISSA")[1],/*lPixel*/,/*{|| code-block de impressao }*/)
+    TRCell():New(oSection1,"Centro de custo","TRB",/*Titulo*/,/*Picture*/,TamSX3("RA_DESCCC")[1],/*lPixel*/,/*{|| code-block de impressao }*/)
+    TRCell():New(oSection1,"Departamento","TRB",/*Titulo*/,/*Picture*/,TamSX3("RA_DDEPTO")[1],/*lPixel*/,/*{|| code-block de impressao }*/)
+    TRCell():New(oSection1,"Situação","TRB",/*Titulo*/,/*Picture*/,TamSX3("RA_SITFOLH")[1],/*lPixel*/,/*{|| code-block de impressao }*/)
+    TRCell():New(oSection1,"Data do evento","TRB",/*Titulo*/,/*Picture*/,TamSX3("RA_ADMISSA")[1],/*lPixel*/,/*{|| code-block de impressao }*/)
+    TRCell():New(oSection1,"Data de admissão","TRB",/*Titulo*/,/*Picture*/,TamSX3("RA_ADMISSA")[1],/*lPixel*/,/*{|| code-block de impressao }*/)
+    TRCell():New(oSection1,"Data de admissão","TRB",/*Titulo*/,/*Picture*/,TamSX3("RA_ADMISSA")[1],/*lPixel*/,/*{|| code-block de impressao }*/)
+    TRCell():New(oSection1,"Data de admissão","TRB",/*Titulo*/,/*Picture*/,TamSX3("RA_ADMISSA")[1],/*lPixel*/,/*{|| code-block de impressao }*/)
+    TRCell():New(oSection1,"Data de admissão","TRB",/*Titulo*/,/*Picture*/,TamSX3("RA_ADMISSA")[1],/*lPixel*/,/*{|| code-block de impressao }*/)
+    TRCell():New(oSection1,"Data de admissão","TRB",/*Titulo*/,/*Picture*/,TamSX3("RA_ADMISSA")[1],/*lPixel*/,/*{|| code-block de impressao }*/)
+    TRCell():New(oSection1,"Data de admissão","TRB",/*Titulo*/,/*Picture*/,TamSX3("RA_ADMISSA")[1],/*lPixel*/,/*{|| code-block de impressao }*/)
+    TRCell():New(oSection1,"Data de admissão","TRB",/*Titulo*/,/*Picture*/,TamSX3("RA_ADMISSA")[1],/*lPixel*/,/*{|| code-block de impressao }*/)
+    TRCell():New(oSection1,"Data de admissão","TRB",/*Titulo*/,/*Picture*/,TamSX3("RA_ADMISSA")[1],/*lPixel*/,/*{|| code-block de impressao }*/)
+    TRCell():New(oSection1,"Data de admissão","TRB",/*Titulo*/,/*Picture*/,TamSX3("RA_ADMISSA")[1],/*lPixel*/,/*{|| code-block de impressao }*/)
+    TRCell():New(oSection1,"Data de admissão","TRB",/*Titulo*/,/*Picture*/,TamSX3("RA_ADMISSA")[1],/*lPixel*/,/*{|| code-block de impressao }*/)
+    TRCell():New(oSection1,"Data de admissão","TRB",/*Titulo*/,/*Picture*/,TamSX3("RA_ADMISSA")[1],/*lPixel*/,/*{|| code-block de impressao }*/)
+Return(oReport)
+
+/*/
+Programa: ReportPrin | Autor: AlexANDre Inacio Lemes | Data: 11/07/2006   
+Descricao: Emissao das Solicitacoes de Compras
+Retorno: Nenhum                                                         
+Parametros ExpO1: Objeto Report do Relat rio                                 
+/*/
+Static Function ReportPrint(oReport)
+
+    Local oSection1 := oReport:Section(1) 
+    Local cQuery 	:= ""
+    Local aAux      :=  {}
+    Local nCont
+    Local aTotReg   :=  {}
+
+    cQuery := " SELECT GW1_DTEMIS,GW1_REGCOM,SUM(GW8_VALOR) AS TOTAL  " 
+    cQuery += " FROM " + RetSQLName("GW1") + " GW1  " 
+    cQuery += " INNER JOIN " + RetSQLName("GW8") + " GW8 ON GW8_FILIAL = GW1_FILIAL AND GW1_CDTPDC=GW8_CDTPDC AND GW1_EMISDC=GW8_EMISDC AND GW1_SERDC=GW8_SERDC AND GW1_NRDC=GW8_NRDC AND GW8.D_E_L_E_T_=' '  " 
+    cQuery += " WHERE GW1_FILIAL+GW1_NRDC+GW1_CDTPDC+GW1_SERDC+GW1_EMISDC IN "
+    cQuery += "      (SELECT GW4_FILIAL+GW4_NRDC+GW4_TPDC+GW4_SERDC+GW4_EMISDC FROM " + RetSQLName("GW4") + " GW4  " 
+    cQuery += "         INNER JOIN " + RetSQLName("GW3") + " GW3 ON GW3_FILIAL = GW4_FILIAL AND GW3_CDESP = GW4_CDESP AND GW3_EMISDF = GW4_EMISDF AND GW3_SERDF = GW4_SERDF AND GW3_NRDF = GW4_NRDF AND GW3_DTEMIS = GW4_DTEMIS AND GW3.D_E_L_E_T_=' ' " 
+    cQuery += " WHERE GW4.D_E_L_E_T_=' ')  " 
+    cQuery += " AND GW1_DTEMIS BETWEEN '20250101' AND '20250131' AND GW1_REGCOM<>' '  " 
+    cQuery += " GROUP BY GW1_DTEMIS,GW1_REGCOM  " 
+    cQuery += " ORDER BY 1  " 
+
+    If Select('TRB') > 0
+        dbSelectArea('TRB')
+        dbCloseArea()
+    EndIf
+
+    cQuery := ChangeQuery(cQuery)
+
+    dbUseArea(.T.,"TOPCONN",TCGENQRY(,,cQuery),"TRB",.F.,.T.)
+    dbSelectArea("TRB")
+
+    While !EOF()
+        // SERIE,NOTA,EMISSAO,CFOP,CST,CNPJ,TIPOMOV,VALOR,ALIQUOTA,BASE,VALICM,CHAVE
+        nPos := Ascan(aTotReg,{|x| x[1] == TRB->GW1_REGCOM} ) 
+
+        If nPos == 0
+            Aadd(aTotReg,{TRB->GW1_REGCOM,TRB->TOTAL,0})
+        Else 
+            aTotReg[nPos,02] += TRB->TOTAL
+        EndIf 
+        
+        Aadd(aAux,{ TRB->GW1_DTEMIS,;
+                    TRB->GW1_REGCOM,;
+                    TRB->TOTAL,;
+                    0,;
+                    0})
+
+        Dbskip()
+    ENDDO
+
+    //GW3_BASIMP - GW3_VALIMP - GW3_VLCOF - GW3_VLPIS
+    cQuery := "SELECT GW1_DTEMIS, GW1_REGCOM, SUM(GW3_BASIMP - GW3_VLIMP - GW3_VLCOF - GW3_VLPIS) AS FRETE " 
+    cQuery += " FROM GW1010 GW1 " 
+    cQuery += " INNER JOIN GW4010 GW4 ON GW4_FILIAL = GW1_FILIAL AND GW1_NRDC = GW4_NRDC AND GW1_CDTPDC = GW4_TPDC AND GW1_SERDC = GW4_SERDC AND GW1_EMISDC = GW4_EMISDC AND GW4.D_E_L_E_T_ = ' ' " 
+    cQuery += " INNER JOIN GW3010 GW3 ON GW3_FILIAL = GW4_FILIAL AND GW3_CDESP = GW4_CDESP AND GW3_EMISDF = GW4_EMISDF AND GW3_SERDF = GW4_SERDF AND GW3_NRDF = GW4_NRDF AND GW3_DTEMIS = GW4_DTEMIS AND GW3.D_E_L_E_T_ = ' ' " 
+    cQuery += " WHERE GW1_DTEMIS BETWEEN '20250101' AND '20250131' AND GW1_REGCOM <> ' ' " 
+    cQuery += " GROUP BY GW1_DTEMIS, GW1_REGCOM " 
+    cQuery += " ORDER BY 1"
+
+    If Select('TRB') > 0
+	    dbSelectArea('TRB')
+	    dbCloseArea()
+    EndIf
+
+    cQuery := ChangeQuery(cQuery)
+
+    dbUseArea(.T.,"TOPCONN",TCGENQRY(,,cQuery),"TRB",.F.,.T.)
+    dbSelectArea("TRB")
+
+    While !EOF()
+        nPos := Ascan(aAux,{|x| x[1]+x[2] == TRB->GW1_DTEMIS+TRB->GW1_REGCOM})
+        
+        If nPos > 0
+            aAux[nPos,04] += TRB->FRETE 
+            aAux[nPos,05] := aAux[nPos,04] / aAux[nPos,03]
+        Else 
+            Aadd(aAux,{ TRB->GW1_DTEMIS,;
+                        TRB->GW1_REGCOM,;
+                        0,;
+                        TRB->FRETE ,;
+                        0})
+        EndIf 
+
+        nPos := Ascan(aTotReg,{|x| x[1] == TRB->GW1_REGCOM} ) 
+
+        If nPos == 0
+            Aadd(aTotReg,{TRB->GW1_REGCOM,0,TRB->FRETE})
+        Else 
+            aTotReg[nPos,03] += TRB->FRETE
+        EndIf
+
+        Dbskip()
+    ENDDO
+
+    oReport:onPageBreak( { ||  /*oReport:SkipLine(), oSection1:PrintLine(), oReport:SkipLine() */})
+    oReport:SetMeter(TRB->(LastRec()))
+
+    dbSelectArea("TRB")               
+    Dbgotop()
+
+    oSection1:Init()
+
+    For nCont := 1 to len(aAux) 
+
+        oSection1:Cell('Data'):SetValue(STOD(aAux[nCont,01]))
+        oSection1:Cell('Regional'):SetValue(aAux[nCont,02])
+        oSection1:Cell('Valor Faturamento Bruto'):SetValue(aAux[nCont,03])
+        oSection1:Cell('Valor Frete s/ Imposto'):SetValue(aAux[nCont,04])
+        oSection1:Cell('% Frete s/ Imposto'):SetValue((aAux[nCont,05]*100))
+        
+
+        oReport:IncMeter()
+
+        If oReport:Cancel()
+            Exit
+        EndIf
+
+        oSection1:PrintLine()
+        
+    Next nCont
+
+    oSection1:Cell('Data'):SetValue('')
+    oSection1:Cell('Regional'):SetValue('')
+    oSection1:Cell('Valor Faturamento Bruto'):SetValue('')
+    oSection1:Cell('Valor Frete s/ Imposto'):SetValue('')
+    oSection1:Cell('% Frete s/ Imposto'):SetValue('')
+    oSection1:PrintLine()
+    oSection1:PrintLine()
+    oSection1:PrintLine()
+    oSection1:PrintLine()
+    oSection1:PrintLine()
+
+    oSection1:Cell('Data'):SetValue('')
+    oSection1:Cell('Regional'):SetValue('Totais por Regi o')
+    oSection1:Cell('Valor Faturamento Bruto'):SetValue('')
+    oSection1:Cell('Valor Frete s/ Imposto'):SetValue('')
+    oSection1:Cell('% Frete s/ Imposto'):SetValue('')
+    oSection1:PrintLine()
+
+    For nCont := 1 to len(aTotReg)
+        oSection1:Cell('Data'):SetValue('')
+        oSection1:Cell('Regional'):SetValue(aTotReg[nCont,01])
+        oSection1:Cell('Valor Faturamento Bruto'):SetValue(aTotReg[nCont,02])
+        oSection1:Cell('Valor Frete s/ Imposto'):SetValue(aTotReg[nCont,03])
+        oSection1:Cell('% Frete s/ Imposto'):SetValue((aTotReg[nCont,03] / aTotReg[nCont,02])*100)
+        oSection1:PrintLine()
+    Next nCont 
+
+    oSection1:Finish()
+    oReport:EndPage() 
+Return Nil
