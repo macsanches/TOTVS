@@ -1,153 +1,121 @@
-#INCLUDE "PROTHEUS.CH"
+#INCLUDE "TOTVS.CH"
 #INCLUDE "TBICONN.CH"
 #INCLUDE "TOPCONN.CH"
 
-/*/{Protheus.doc} CRTR001
-Relatorio de status dos colaboradores
-@type function
-@version 1.0.1 
-@author Marcos Antonio Sanches
-@since 4/29/2025
-/*/
+User Function CRTRH01()
+    Private oReport
 
-User Function CRTRH01
-    Local oReport
-    Private lAuto := .F. 
+    Processa({|| GeraPlanilha()},"Gerando planilha...", , , , )
+Return                           
 
-    oReport:= ReportDef()
-    oReport:PrintDialog()                                               
-Return
+Static Function GeraPlanilha()
+    Local aArea         := GetArea()
+    Local cQuery        := ""
+    Local oFWMsExcel    
+    Local oExcel
+    Local cArquivo      := GetTempPath()+'zTstExc1.xml'
+ 
+    //Pegando os dados
+    cQuery := " SELECT RA_MAT,RA_NOMECMP,RA_NASC,RA_LOGRDSC,RA_LOGRNUM,RA_BAIRRO,RA_CODMUN,RA_CEP, '(' + RA_DDDFONE + ')' + '-' + RA_TELEFON AS RA_FONE"
+    cQuery += " ,RA_RG,RA_CIC,RA_PIS,SUBSTRING(RA_BCDEPSA,1,3) AS RA_BANCO, SUBSTRING(RA_BCDEPSA,4,10) AS RA_AGENCIA "
+    cQuery += " ,CASE WHEN RA_CTDEPSA = '1' THEN 'Conta Corrente' WHEN RA_CTDEPSA = '2' THEN 'Conta Poupanca' ELSE 'Nao informado' END AS RA_CTDEPSA "
+    cQuery += " ,RA_ADMISSA,RA_CC,RA_DEPTO"
+    cQuery += " ,CASE WHEN RA_SITFOLH = ' ' THEN 'Ativo' WHEN RA_SITFOLH = 'D' THEN 'Desligado' WHEN RA_SITFOLH = 'F' THEN 'Ferias' ELSE 'Nao informado' END AS RA_SITFOLH "
+    cQuery += " ,RA_CODFUNC"
+    cQuery += " FROM "+RetSqlName("SRA")+" SRA "
+    cQuery += " WHERE SRA.D_E_L_E_T_ = '' "  
+    cQuery += " ORDER BY RA_MAT "
 
-/*/
-   Programa: ReportDef | Autor: Everton Rosa | Data: 25/04/2023   
-   Descricao: Dados para exibicao
-   Parametros  nExp01: nReg 
-Retorno oExpO1: Objeto do relatorio
-/*/
-Static Function ReportDef()
+   //salva o código sql na pasta TEMP para consultas no seu SGBD
+    memoWrite("\TEMP\RELSRA.sql",cQuery)     
+    TCQuery cQuery New Alias "TRB"
 
-    Local oReport 
-    Local oSection1 
-    Local cTitle := "Relatorio de Analise de funcionáros"
-             
-    /*Variaveis utilizadas para parametros                          
-    mv_par01: Data De                                           
-    mv_par02: Data Ate                                          
-    */                                                                
-    Pergunte("GPER090",.F.)
-
-    oReport := TReport():New("GPER090",cTitle,If(lAuto,Nil,"GPER090"), {|oReport| ReportPrint(oReport)},"") 
-    oReport:SetLANDscape() 
-
-    /*                                                                        ?
-    Criacao da celulas da secao do relatorio                                 
-        TRCell():New                                                             
-        ExpO1 : Objeto TSection que a secao pertence                             
-        ExpC2 : Nome da celula do relat rio. O SX3 ser  consultado               
-        ExpC3 : Nome da tabela de referencia da celula                           
-        ExpC4 : Titulo da celula                                                 
-            Default : X3Titulo()                                             
-        ExpC5 : Picture                                                          
-            Default : X3_PICTURE                                             
-        ExpC6 : Tamanho                                                          
-            Default : X3_TAMANHO                                             
-            ExpL7 : Informe se o tamanho esta em pixel                               
-            Default : False                                                  
-        ExpB8 : Bloco de c digo para impressao.                                  
-            Default : ExpC2                                                  
-    */                                                                          
+    //Criando o objeto que irá gerar o conteúdo do Excel
+    oFWMsExcel := FWMSExcel():New()
+    oFWMsExcel:AddworkSheet("Gestao dos colaboradores")
+                   
+    //Criando a Tabela
+    oFWMsExcel:AddTable("Gestao dos colaboradores","Colaborador")
+    oFWMsExcel:AddColumn("Gestao dos colaboradores","Colaborador","Matricula",1)
+    oFWMsExcel:AddColumn("Gestao dos colaboradores","Colaborador","Nome",1)
+    oFWMsExcel:AddColumn("Gestao dos colaboradores","Colaborador","Dt.Nasc",1)
+    oFWMsExcel:AddColumn("Gestao dos colaboradores","Colaborador","Logradouro",1)
+    oFWMsExcel:AddColumn("Gestao dos colaboradores","Colaborador","Num",1)
+    oFWMsExcel:AddColumn("Gestao dos colaboradores","Colaborador","Bairro",1)
+    oFWMsExcel:AddColumn("Gestao dos colaboradores","Colaborador","Municipio",1)
+    oFWMsExcel:AddColumn("Gestao dos colaboradores","Colaborador","Cep",1)
+    oFWMsExcel:AddColumn("Gestao dos colaboradores","Colaborador","Telefone",1)
+    oFWMsExcel:AddColumn("Gestao dos colaboradores","Colaborador","RG",1)
+    oFWMsExcel:AddColumn("Gestao dos colaboradores","Colaborador","CPF",1)
+    oFWMsExcel:AddColumn("Gestao dos colaboradores","Colaborador","PIS",1)
+    oFWMsExcel:AddColumn("Gestao dos colaboradores","Colaborador","Banco",1)
+    oFWMsExcel:AddColumn("Gestao dos colaboradores","Colaborador","Agencia",1)
+    oFWMsExcel:AddColumn("Gestao dos colaboradores","Colaborador","Tipo conta",1)
+    oFWMsExcel:AddColumn("Gestao dos colaboradores","Colaborador","Admissao",1)
+    oFWMsExcel:AddColumn("Gestao dos colaboradores","Colaborador","Centro de custo",1)
+    oFWMsExcel:AddColumn("Gestao dos colaboradores","Colaborador","Departamento",1)
+    oFWMsExcel:AddColumn("Gestao dos colaboradores","Colaborador","Situacao",1)
+    oFWMsExcel:AddColumn("Gestao dos colaboradores","Colaborador","Data do envento",1)
+    oFWMsExcel:AddColumn("Gestao dos colaboradores","Colaborador","Substituto",1)
+    oFWMsExcel:AddColumn("Gestao dos colaboradores","Colaborador","Cargo",1)
+    oFWMsExcel:AddColumn("Gestao dos colaboradores","Colaborador","Carga horaria",1)
+    oFWMsExcel:AddColumn("Gestao dos colaboradores","Colaborador","Inicial",1)
+    oFWMsExcel:AddColumn("Gestao dos colaboradores","Colaborador","Final",1)
+    oFWMsExcel:AddColumn("Gestao dos colaboradores","Colaborador","Sal.Liquido",1)
+    oFWMsExcel:AddColumn("Gestao dos colaboradores","Colaborador","Insalubridade",1)
+    oFWMsExcel:AddColumn("Gestao dos colaboradores","Colaborador","VT",1)
+    oFWMsExcel:AddColumn("Gestao dos colaboradores","Colaborador","VR",1)
+    oFWMsExcel:AddColumn("Gestao dos colaboradores","Colaborador","Total",1)
     
-    oSection1:= TRSection():New(oReport,"NAZ",{"TRB"},/*aOrdem*/)
-    oSection1:SetHeaderPage()
 
-    TRCell():New(oSection1,"Matricula","TRB",/*Titulo*/,/*Picture*/,TamSX3("RA_MAT")[1],/*lPixel*/,/*{|| code-block de impressao }*/)
-    TRCell():New(oSection1,"Nome completo","TRB",/*Titulo*/,/*Picture*/,TamSX3("RA_NOMECMP")[1],/*lPixel*/)
-    TRCell():New(oSection1,"Data de nascimento","TRB",/*Titulo*/,/*Picture*/,TamSX3("RA_NASC")[1],/*lPixel*/,/*{|| code-block de impressao }*/)
-    TRCell():New(oSection1,"Endereço","TRB",/*Titulo*/,/*Picture*/,TamSX3("RA_LOGRDSC")[1],/*lPixel*/, /**/ )
-    TRCell():New(oSection1,"Número","TRB",/*Titulo*/,/*Picture*/,TamSX3("RA_LOGRNUM")[1],/*lPixel*/,/*{|| code-block de impressao }*/)
-    TRCell():New(oSection1,"Bairro","TRB",/*Titulo*/,/*Picture*/,TamSX3("RA_BAIRRO")[1],/*lPixel*/,/*{|| code-block de impressao }*/)
-    TRCell():New(oSection1,"Cidade","TRB",/*Titulo*/,/*Picture*/,TamSX3("RA_CODMUNE")[1],/*lPixel*/,/*{|| code-block de impressao }*/)
-    TRCell():New(oSection1,"CEP","TRB",/*Titulo*/,/*Picture*/,TamSX3("RA_CEP")[1],/*lPixel*/,/*{|| code-block de impressao }*/)
-    TRCell():New(oSection1,"DDD + Telefone","TRB",/*Titulo*/,/*Picture*/,TamSX3("RA_DDDCELU")[1]+TamSX3("RA_NUMCELU")[1],/*lPixel*/,/*{|| code-block de impressao }*/)
-    TRCell():New(oSection1,"RG","TRB",/*Titulo*/,/*Picture*/,TamSX3("RA_RG")[1],/*lPixel*/,/*{|| code-block de impressao }*/)
-    TRCell():New(oSection1,"CPF","TRB",/*Titulo*/,/*Picture*/,TamSX3("RA_CIC")[1],/*lPixel*/,/*{|| code-block de impressao }*/)
-    TRCell():New(oSection1,"PIS","TRB",/*Titulo*/,/*Picture*/,TamSX3("RA_PIS")[1],/*lPixel*/,/*{|| code-block de impressao }*/)
-    TRCell():New(oSection1,"Banco","TRB",/*Titulo*/,/*Picture*/,TamSX3("RA_BCDEPSA")[1],/*lPixel*/,/*{|| code-block de impressao }*/)
-    TRCell():New(oSection1,"Agencia","TRB",/*Titulo*/,/*Picture*/,TamSX3("RA_BCDEPSA")[1],/*lPixel*/,/*{|| code-block de impressao }*/)
-    TRCell():New(oSection1,"Conta","TRB",/*Titulo*/,/*Picture*/,TamSX3("RA_CTDEPSA")[1],/*lPixel*/,/*{|| code-block de impressao }*/)
-    TRCell():New(oSection1,"Tipo conta","TRB",/*Titulo*/,/*Picture*/,TamSX3("RA_TPCTSAL")[1],/*lPixel*/,/*{|| code-block de impressao }*/)
-    TRCell():New(oSection1,"Data de admissão","TRB",/*Titulo*/,/*Picture*/,TamSX3("RA_ADMISSA")[1],/*lPixel*/,/*{|| code-block de impressao }*/)
-    TRCell():New(oSection1,"Centro de custo","TRB",/*Titulo*/,/*Picture*/,TamSX3("RA_DESCCC")[1],/*lPixel*/,/*{|| code-block de impressao }*/)
-    TRCell():New(oSection1,"Departamento","TRB",/*Titulo*/,/*Picture*/,TamSX3("RA_DDEPTO")[1],/*lPixel*/,/*{|| code-block de impressao }*/)
-    TRCell():New(oSection1,"Situação","TRB",/*Titulo*/,/*Picture*/,TamSX3("RA_SITFOLH")[1],/*lPixel*/,/*{|| code-block de impressao }*/)
-    TRCell():New(oSection1,"Data do evento","TRB",/*Titulo*/,/*Picture*/,TamSX3("RA_ADMISSA")[1],/*lPixel*/,/*{|| code-block de impressao }*/)
-    TRCell():New(oSection1,"Data de admissão","TRB",/*Titulo*/,/*Picture*/,TamSX3("RA_ADMISSA")[1],/*lPixel*/,/*{|| code-block de impressao }*/)
-    TRCell():New(oSection1,"Data de admissão","TRB",/*Titulo*/,/*Picture*/,TamSX3("RA_ADMISSA")[1],/*lPixel*/,/*{|| code-block de impressao }*/)
-    TRCell():New(oSection1,"Data de admissão","TRB",/*Titulo*/,/*Picture*/,TamSX3("RA_ADMISSA")[1],/*lPixel*/,/*{|| code-block de impressao }*/)
-    TRCell():New(oSection1,"Data de admissão","TRB",/*Titulo*/,/*Picture*/,TamSX3("RA_ADMISSA")[1],/*lPixel*/,/*{|| code-block de impressao }*/)
-    TRCell():New(oSection1,"Data de admissão","TRB",/*Titulo*/,/*Picture*/,TamSX3("RA_ADMISSA")[1],/*lPixel*/,/*{|| code-block de impressao }*/)
-    TRCell():New(oSection1,"Data de admissão","TRB",/*Titulo*/,/*Picture*/,TamSX3("RA_ADMISSA")[1],/*lPixel*/,/*{|| code-block de impressao }*/)
-    TRCell():New(oSection1,"Data de admissão","TRB",/*Titulo*/,/*Picture*/,TamSX3("RA_ADMISSA")[1],/*lPixel*/,/*{|| code-block de impressao }*/)
-    TRCell():New(oSection1,"Data de admissão","TRB",/*Titulo*/,/*Picture*/,TamSX3("RA_ADMISSA")[1],/*lPixel*/,/*{|| code-block de impressao }*/)
-    TRCell():New(oSection1,"Data de admissão","TRB",/*Titulo*/,/*Picture*/,TamSX3("RA_ADMISSA")[1],/*lPixel*/,/*{|| code-block de impressao }*/)
-    TRCell():New(oSection1,"Data de admissão","TRB",/*Titulo*/,/*Picture*/,TamSX3("RA_ADMISSA")[1],/*lPixel*/,/*{|| code-block de impressao }*/)
-    TRCell():New(oSection1,"Data de admissão","TRB",/*Titulo*/,/*Picture*/,TamSX3("RA_ADMISSA")[1],/*lPixel*/,/*{|| code-block de impressao }*/)
-Return(oReport)
+    //Criando as Linhas... Enquanto não for fim da query
+    While !(TRB->(EoF()))
+        oFWMsExcel:AddRow("Gestao dos colaboradores","Colaborador",{;
+                                                        TRB->RA_MAT,;
+                                                        TRB->RA_NOMECMP,;
+                                                        TRB->RA_NASC,;
+                                                        TRB->RA_LOGRDSC,;
+                                                        TRB->RA_LOGRNUM,;
+                                                        TRB->RA_BAIRRO,;
+                                                        TRB->RA_CODMUN,;
+                                                        TRB->RA_CEP,;
+                                                        TRB->RA_FONE,;
+                                                        TRB->RA_RG,;
+                                                        TRB->RA_CIC,;
+                                                        TRB->RA_PIS,;
+                                                        TRB->RA_BANCO,;
+                                                        TRB->RA_AGENCIA,;
+                                                        TRB->RA_CTDEPSA,;
+                                                        TRB->RA_ADMISSA,;
+                                                        TRB->RA_CC,;
+                                                        TRB->RA_DEPTO,;
+                                                        TRB->RA_SITFOLH,;
+                                                        Space(10),;
+                                                        Space(10),;
+                                                        TRB->RA_CODFUNC,;
+                                                        Space(10),;
+                                                        Space(10),;
+                                                        Space(10),;
+                                                        Space(10),;
+                                                        Space(10),;
+                                                        Space(10),;
+                                                        Space(10),;
+                                                        Space(10)})
 
-/*/
-Programa: ReportPrin | Autor: AlexANDre Inacio Lemes | Data: 11/07/2006   
-Descricao: Emissao das Solicitacoes de Compras
-Retorno: Nenhum                                                         
-Parametros ExpO1: Objeto Report do Relat rio                                 
-/*/
-Static Function ReportPrint(oReport)
-
-    Local oSection1 := oReport:Section(1) 
-    Local cQuery 	:= ""
-    Local aAux      :=  {}
-    Local nCont
-
-    cQuery := "SELECT RA_MAT,RA_NOMECMP,RA_NASC,RA_LOGRDSC,RA_LOGRNUM,RA_BAIRRO,RA_CEP,RA_DDDCELU,RA_NUMCELU,RA_RG,RA_CIC,RA_PIS,RA_BCDEPSA,RA_CTDEPSA,RA_TPCTSAL,RA_ADMISSA FROM SRA010"
-
-    If Select('TRB') > 0
-        dbSelectArea('TRB')
-        dbCloseArea()
-    EndIf
-
-    cQuery := ChangeQuery(cQuery)
-
-    dbUseArea(.T.,"TOPCONN",TCGENQRY(,,cQuery),"TRB",.F.,.T.)
-    dbSelectArea("TRB")
-
-    While !EOF()
-        // SERIE,NOTA,EMISSAO,CFOP,CST,CNPJ,TIPOMOV,VALOR,ALIQUOTA,BASE,VALICM,CHAVE
-        //nPos := Ascan(aTotReg,{|x| x[1] == TRB->GW1_REGCOM} ) 
-
-        //If nPos == 0
-            //Aadd(aTotReg,{TRB->RA_MAT,0,0})
-        //Else 
-            //aTotReg[nPos,02] += TRB->TOTAL
-        //EndIf 
-        
-        Aadd(aAux,{ TRB->RA_MAT})
-        
-        Dbskip()
-    ENDDO
-
-    For nCont := 1 to len(aAux) 
-
-        oSection1:Cell('Matricula'):SetValue(aAux[nCont,01])
-        
-        oReport:IncMeter()
-
-        If oReport:Cancel()
-            Exit
-        EndIf
-
-        oSection1:PrintLine()
-        
-    Next nCont
-
-    oSection1:Finish()
-    oReport:EndPage() 
-Return Nil
+        //Pulando Registro
+        TRB->(DbSkip())
+    EndDo
+     
+    //Ativando o arquivo e gerando o xml
+    oFWMsExcel:Activate()
+    oFWMsExcel:GetXMLFile(cArquivo)
+         
+    //Abrindo o excel e abrindo o arquivo xml
+    oExcel := MsExcel():New()             //Abre uma nova conexão com Excel
+    oExcel:WorkBooks:Open(cArquivo)     //Abre uma planilha
+    oExcel:SetVisible(.T.)                 //Visualiza a planilha
+    oExcel:Destroy()                        //Encerra o processo do gerenciador de tarefas
+     
+    TRB->(DbCloseArea())
+    RestArea(aArea)
+Return
