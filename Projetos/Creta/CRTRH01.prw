@@ -2,6 +2,13 @@
 #INCLUDE "TBICONN.CH"
 #INCLUDE "TOPCONN.CH"
 
+/*/{Protheus.doc} CRTRH01
+Relatorio de status dos colaboradores
+@type function
+@version 1.0.1 
+@author Marcos A Sanches
+@since 5/4/2025
+/*/
 User Function CRTRH01()
     Private oReport
 
