@@ -21,7 +21,10 @@
 		},
 		{
 			"label": "SIGAMDI"
+		},
+		{
+			"label": "SIGAGPE"
 		}
 	],
-	"lastProgramExecuted": "SIGAMDI"
+	"lastProgramExecuted": "SIGAGPE"
 }
