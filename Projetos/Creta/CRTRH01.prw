@@ -173,7 +173,7 @@ Static Function GeraPlanilha()
                                                         Space(10),;
                                                         Space(10),;
                                                         Space(10)})
-        //Pulando Registro
+
         TRB->(DbSkip())
         nSequencia++
     EndDo
