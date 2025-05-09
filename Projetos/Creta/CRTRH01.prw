@@ -29,6 +29,8 @@ Static Function GeraPlanilha()
     Local cDepto        := ""
     Local cCargo        := ""
     Local cEvento      := ""
+
+    Pergunte("CRTRH01", .T.)
  
     //Pegando os dados
     cQuery := " SELECT TOP 100 RA_FILIAL,RA_MAT,RA_NOMECMP,CONVERT(CHAR(10),RA_NASC,103) AS RA_NASC,RA_LOGRDSC,RA_LOGRNUM,RA_BAIRRO,RA_CODMUN,RA_CEP, RA_TELEFON AS RA_FONE, RA_DDDFONE AS RA_DDD"
@@ -39,6 +41,11 @@ Static Function GeraPlanilha()
     cQuery += " ,RA_CODFUNC"
     cQuery += " FROM "+RetSqlName("SRA")+" SRA "
     cQuery += " WHERE SRA.D_E_L_E_T_ = '' "  
+
+    If MV_PAR01 <> "" .And. MV_PAR02 <> ""
+        cQuery += " AND RA_FILIAL BETWEEN '" + MV_PAR01 + "' AND '" + MV_PAR02 + "'"
+    Endif
+
     cQuery += " ORDER BY RA_MAT "
 
    //salva o código sql na pasta TEMP para consultas no seu SGBD
@@ -84,7 +91,6 @@ Static Function GeraPlanilha()
     oFWMsExcel:AddColumn("Gestao dos colaboradores","Colaborador","VR",1)
     oFWMsExcel:AddColumn("Gestao dos colaboradores","Colaborador","Total",1)
     
-
     //Criando as Linhas... Enquanto não for fim da query
     While !(TRB->(EoF()))
          if Select("TMPAux") > 0
@@ -177,6 +183,7 @@ Static Function GeraPlanilha()
         TRB->(DbSkip())
         nSequencia++
     EndDo
+
      
     //Ativando o arquivo e gerando o xml
     oFWMsExcel:Activate()
