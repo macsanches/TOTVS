@@ -1,11 +1,3 @@
-/******************************************************************************
-* Programa.........:   TOPSKA										          *
-* Módulo...........:   PCP      	                                          *
-* Autor............:   Guilherme Carvalho 			                          *
-* Solicitante......:   TopTools - SKA        			                      *
-* Objetivo.........:   Integração com o sistema SKA para receber informações  *
-*                      SKA realiza POST no Protheus.                          *
-******************************************************************************/
 #include "protheus.ch"
 #include "totvs.ch"
 #include "restful.ch"
@@ -22,7 +14,7 @@
 
 	END WSRESTFUL
 
-WSMETHOD POST WSRECEIVE RECEIVE WSSERVICE WsPedOp
+WSMETHOD POST WSRECEIVE RECEIVE WSSERVICE WsAssVisit
 
 Local lRet      := .T.         // Recebe o Retorno 
 Local cBody     := ''          // Recebe o conteudo do Rest
@@ -61,18 +53,12 @@ aRet := {}
 
 //ConOut("len: "+str(len(oJson)))
 
-aAtuPV:= oJson:GetJsonObject("AtualizacaoPV")
+aAtuVis := oJson:GetJsonObject("Assinatura")
 
-For i := 1 to len(aAtuPV)
+For i := 1 to len(aAtuVis)
 
-	cNumOP := aAtuPV[i]['CodOP']
-	cDataReal := aAtuPV[i]['DataEntregaReal']
-	cVersao := aAtuPV[i]['VersaoOP']
-	cDataReal := SUBSTR(cDataReal,1,4)+SUBSTR(cDataReal,6,2)+SUBSTR(cDataReal,9,2)
-	
-	IF SUBSTRING(cNumOP,11,3) <> '001'
-		LOOP
-	ENDIF
+	cNumVis := aAtuVis[i]['CodVis']
+	cAssinatura := aAtuVis[i]['Assinatura']
 
 	//ConOut("Gui: "+cNumOP+" - "+cDataReal+" - "+cVersao)
 	
