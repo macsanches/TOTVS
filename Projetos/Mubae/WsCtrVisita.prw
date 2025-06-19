@@ -58,7 +58,7 @@ WSMETHOD POST WSRECEIVE RECEIVE WSSERVICE WsVisAssinatura
 
 		If dbSeek(xFilial + cNumVis)
 			RecLock("SC6",.F.)
-				SPY->PY_XASS := cAssinatura
+				SPY->PY_XXASSDG := cAssinatura
 			MsUnlock()
 
 			Aadd(aRet,JsonObject():new())
@@ -84,5 +84,4 @@ WSMETHOD POST WSRECEIVE RECEIVE WSSERVICE WsVisAssinatura
    FreeObj(oJsonRet)
    FreeObj(oJson)
 Return(lRet)
-
 

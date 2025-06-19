@@ -5,6 +5,7 @@
 		}
 	],
 	"settings": {
-		"totvsLanguageServer.welcomePage": false
+		"totvsLanguageServer.welcomePage": false,
+		"totvsLanguageServer.editor.linter.includes": "C:\\Includes"
 	}
 }
